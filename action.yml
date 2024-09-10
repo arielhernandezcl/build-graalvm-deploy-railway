@@ -52,3 +52,4 @@ runs:
 
 branding:
   color: 'blue'
+  icon: 'terminal'

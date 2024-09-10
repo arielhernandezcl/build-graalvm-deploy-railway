@@ -1,46 +1,54 @@
 name: Build GraalVM Executable and Push To Railway
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+description: Build a GraalVM native executable and deploy it to Railway using GitHub Actions.
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+inputs:
+  RAILWAY_TOKEN:
+    description: 'Railway authentication token'
+    required: true
+    default: ''
+  SVC_ID:
+    description: 'Service ID for Railway'
+    required: true
+    default: ''
 
-    steps:
-      - uses: actions/checkout@v3
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
       
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
 
-      - name: Set up GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm-community'
+    - name: Set up GraalVM
+      uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '21'
+        distribution: 'graalvm-community'
 
-      - name: Build with Maven
-        run: mvn -Pnative native:compile -DskipTests
+    - name: Build with Maven
+      run: mvn -Pnative native:compile -DskipTests
 
-      - name: Move Executable
-        run: mv ./target/appBuild ./
+    - name: Move Executable
+      run: mv ./target/appBuild ./
       
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli
-      
-      - name: Verify Railway CLI installation
-        run: railway --version
+    - name: Install Railway CLI
+      run: npm i -g @railway/cli
+    
+    - name: Verify Railway CLI installation
+      run: railway --version
 
-      - name: Deploy to Railway
-        run: railway up --service=${{ secrets.SVC_ID }}
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          SVC_ID: ${{ secrets.SVC_ID }}
+    - name: Deploy to Railway
+      run: railway up --service=${{ inputs.SVC_ID }}
+      env:
+        RAILWAY_TOKEN: ${{ inputs.RAILWAY_TOKEN }}
+        SVC_ID: ${{ inputs.SVC_ID }}
+
+branding:
+  color: 'blue'

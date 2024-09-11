@@ -40,4 +40,4 @@ CMD ["./appBuild"]
 
 ## Contributions
 
-Contributions are welcome. Please open an issue or pull request in the action repository.
+Contributions are welcome. Please open an issue or pull request in the action repository. 
